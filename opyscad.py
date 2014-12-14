@@ -138,6 +138,7 @@ def create_class(name, pos_arg_keys = None, s_arg_keys = None, has_childs = Fals
 square = create_class('square', ['size', 'center'])
 circle = create_class('circle', ['r'], ['fn'])
 polygon = create_class('polygon', ['points', 'paths', 'convexity'])
+offset = create_class('offset', ['delta', 'join_type', 'miter_limit'], has_childs = True)
 
 #============= 3D primitives
 cube = create_class('cube', ['size', 'center'])
