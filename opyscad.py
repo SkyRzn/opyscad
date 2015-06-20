@@ -170,5 +170,5 @@ projection = create_class('projection', ['cut'], has_childs = True)
 surface = create_class('surface', ['file', 'center', 'convexity'], has_childs = True)
 
 #============= modifiers
-imp = create_class('import', ['"filename'])
+imp = create_class('import', ['"file'])
 
