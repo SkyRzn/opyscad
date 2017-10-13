@@ -29,14 +29,14 @@ def create_args(args, kwargs, pos_arg_keys, s_arg_keys):
 
 	return ', '.join(res)
 
-def create_class(name, pos_arg_keys = None, s_arg_keys = None, has_childs = False):
+def create_class(name, pos_arg_keys = None, s_arg_keys = None, has_children = False):
 	if not pos_arg_keys:
 		pos_arg_keys = []
 	if not s_arg_keys:
 		s_arg_keys = []
 
 	class Abstract:
-		childs = None
+		children = None
 		modifiers = ''
 		def __init__(self, *args, **kwargs):
 			self.name = name
@@ -44,23 +44,27 @@ def create_class(name, pos_arg_keys = None, s_arg_keys = None, has_childs = Fals
 
 		def __add__(self, x):
 			if not hasattr(x, 'name'):
-				raise Exception('Add argument must be a pyscad object')
+				raise Exception('Argument must be a pyscad object')
 			elif x.name == 'union':
-				x.childs.append(self)
+				x.children.append(self)
 				return x
 			elif self.name == 'union':
-				self.childs.append(x)
+				self.children.append(x)
 				return self
 			return union()(self, x)
 
+		def add(self, *args):
+			for arg in args:
+				self.__add__(arg)
+
 		def __and__(self, x):
 			if not hasattr(x, 'name'):
-				raise Exception('Add argument must be a pyscad object')
+				raise Exception('Argument must be a pyscad object')
 			elif x.name == 'intersection':
-				x.childs.append(self)
+				x.children.append(self)
 				return x
 			elif self.name == 'intersection':
-				self.childs.append(x)
+				self.children.append(x)
 				return self
 			return intersection()(self, x)
 
@@ -69,22 +73,25 @@ def create_class(name, pos_arg_keys = None, s_arg_keys = None, has_childs = Fals
 
 		def __lshift__(self, x): # translate
 			if type(x) != list:
-				raise Exception('Translate argument must be a list type')
+				raise Exception('Argument must be a list')
 			return translate(x)(self)
 
 		def __mul__(self, x): # scale
 			if type(x) not in (list, int):
-				raise Exception('Scale argument must be a list or int type')
+				raise Exception('Argument must be a list or int')
 			return scale(x)(self)
 
 		def __div__(self, x): # rotate
 			if type(x) != list:
-				raise Exception('Rotate argument must be a list type')
+				raise Exception('Argument must be a list')
 			return rotate(x)(self)
+
+		def __truediv__(self, x): # rotate (Python 3)
+			return self.__div__(x)
 
 		def __or__(self, x): # mirror
 			if type(x) != list:
-				raise Exception('Mirror argument must be a list type')
+				raise Exception('Argument must be a list')
 			return mirror(x)(self)
 
 		def __neg__(self): # disable (*)
@@ -107,9 +114,9 @@ def create_class(name, pos_arg_keys = None, s_arg_keys = None, has_childs = Fals
 
 		def str(self, indent = 0):
 			res = '%s%s%s(%s)' % ('\t'*indent, self.modifiers, self.name, self.args)
-			if self.childs != None:
-				childs = map(lambda x: x.str(indent + 1), self.childs)
-				res += ' {\n%s\n%s}' % ('\n'.join(childs), '\t'*indent)
+			if self.children != None:
+				children = map(lambda x: x.str(indent + 1), self.children)
+				res += ' {\n%s\n%s}' % ('\n'.join(children), '\t'*indent)
 			else:
 				res += ';'
 			return res
@@ -122,13 +129,13 @@ def create_class(name, pos_arg_keys = None, s_arg_keys = None, has_childs = Fals
 	class AbstractIns(Abstract):
 		def __init__(self, *args, **kwargs):
 			Abstract.__init__(self, *args, **kwargs)
-			self.childs = []
+			self.children = []
 
 		def __call__(self, *args):
-			self.childs = list(args)
+			self.children = list(args)
 			return self
 
-	if has_childs:
+	if has_children:
 		return AbstractIns
 	else:
 		return Abstract
@@ -138,7 +145,6 @@ def create_class(name, pos_arg_keys = None, s_arg_keys = None, has_childs = Fals
 square = create_class('square', ['size', 'center'])
 circle = create_class('circle', ['r'], ['fn'])
 polygon = create_class('polygon', ['points', 'paths', 'convexity'])
-offset = create_class('offset', ['delta', 'join_type', 'miter_limit'], has_childs = True)
 
 #============= 3D primitives
 cube = create_class('cube', ['size', 'center'])
@@ -147,27 +153,28 @@ cylinder = create_class('cylinder', ['h', 'r'], ['fa', 'fs', 'fn'])
 polyhedron = create_class('polyhedron', ['points', 'triangles', 'convexity'])
 
 #============= transforms
-scale = create_class('scale', ['v'], has_childs = True)
-resize = create_class('resize', ['newsize', 'auto'], has_childs = True)
-rotate = create_class('rotate', ['a', 'v'], has_childs = True)
-translate = create_class('translate', ['v'], has_childs = True)
-mirror = create_class('mirror', ['v'], has_childs = True)
-multmatrix = create_class('multmatrix', ['m'], has_childs = True)
-color = create_class('color', ['c', 'alpha'], has_childs = True)
-minkowski = create_class('minkowski', has_childs = True)
-hull = create_class('hull', has_childs = True)
-render = create_class('render', ['convexity'], has_childs = True)
+offset = create_class('offset', ['delta', 'join_type', 'miter_limit'], has_children = True)
+scale = create_class('scale', ['v'], has_children = True)
+resize = create_class('resize', ['newsize', 'auto'], has_children = True)
+rotate = create_class('rotate', ['a', 'v'], has_children = True)
+translate = create_class('translate', ['v'], has_children = True)
+mirror = create_class('mirror', ['v'], has_children = True)
+multmatrix = create_class('multmatrix', ['m'], has_children = True)
+color = create_class('color', ['c', 'alpha'], has_children = True)
+minkowski = create_class('minkowski', has_children = True)
+hull = create_class('hull', has_children = True)
+render = create_class('render', ['convexity'], has_children = True)
 
 #============= boolean operations
-union = create_class('union', has_childs = True)
-intersection = create_class('intersection', has_childs = True)
-difference = create_class('difference', has_childs = True)
+union = create_class('union', has_children = True)
+intersection = create_class('intersection', has_children = True)
+difference = create_class('difference', has_children = True)
 
 #============= extrusions
-linear_extrude = create_class('linear_extrude', ['height', 'center'], ['fn'], has_childs = True)
-rotate_extrude = create_class('rotate_extrude', ['convexity'], ['fn'], has_childs = True)
-projection = create_class('projection', ['cut'], has_childs = True)
-surface = create_class('surface', ['file', 'center', 'convexity'], has_childs = True)
+linear_extrude = create_class('linear_extrude', ['height', 'center'], ['fn'], has_children = True)
+rotate_extrude = create_class('rotate_extrude', ['convexity'], ['fn'], has_children = True)
+projection = create_class('projection', ['cut'], has_children = True)
+surface = create_class('surface', ['file', 'center', 'convexity'], has_children = True)
 
 #============= modifiers
 imp = create_class('import', ['"file'])
