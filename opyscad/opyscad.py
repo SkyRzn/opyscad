@@ -1,13 +1,13 @@
-# -(unary) disable modifier (*)
-# +(unary) highlight modifier (#)
-# ~(unary) transparent modifier (%)
-# * scale([x,y,z])
-# / rotate([x,y,z])
-# + union
-# - difference
-# << translate
-# & intersection
-# | mirror([x,y,z])
+"""-(unary) disable modifier (*)
++(unary) highlight modifier (#)
+~(unary) transparent modifier (%)
+* scale([x,y,z])
+/ rotate([x,y,z])
++ union
+- difference
+<< translate
+& intersection
+| mirror([x,y,z])"""
 
 
 def create_args(args, kwargs, pos_arg_keys, s_arg_keys):
