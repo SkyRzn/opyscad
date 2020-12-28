@@ -14,7 +14,7 @@ def create_args(args, kwargs, pos_arg_keys, s_arg_keys):
 	for key, val in zip(pos_arg_keys, args):
 		kwargs[key] = val
 
-	for key, val in kwargs.items():
+	for key, val in list(kwargs.items()):
 		if key in s_arg_keys:
 			del(kwargs[key])
 			key = '$' + key
